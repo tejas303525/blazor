@@ -1,0 +1,64 @@
+﻿@page "/AddMembers"
+@attribute [Authorize(Roles = "Administrator")]
+@using proj1.Shared
+@inject NavigationManager navigationManager
+@inject UserService us
+@inject HttpClient Http
+@inject IJSRuntime ij;
+<PageTitle>AddMembers</PageTitle>
+
+<h1>Add Members</h1>
+
+
+<EditForm Model="@Account" OnValidSubmit="AddMember">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText class="form-control" placeholder="Firstname" @bind-Value="@Account.Firstname" />
+    <br>
+    <InputText class="form-control" placeholder="Lastname" @bind-Value="@Account.Lastname" />
+    <br>
+    <InputText class="form-control" placeholder="Username" @bind-Value="@Account.Username" />
+    <br>
+    <InputText type="password" class="form-control" placeholder="Password" @bind-Value="@Account.Password" />
+    <br>
+    <InputSelect id="role" @bind-Value="Account.Role">
+        <option>Roles</option>
+        <option value="Administrator">Admin</option>
+        <option value="User">User</option>
+    </InputSelect>
+    <br>
+    <br>
+    <button class="btn btn-primary" type="submit">Add Member</button>
+</EditForm>
+
+
+@code {
+    private UserHardcodedAccount Account = new UserHardcodedAccount();
+    public async Task AddMember()
+    {
+        @* var existingUser = us.GetUserByUsername(Account.Username); *@
+        var resp = await Http.GetAsync($"api/User/{Account.Username}");
+        if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            var response = await Http.PostAsJsonAsync("api/User", Account);
+            if (response.IsSuccessStatusCode)
+            {
+                navigationManager.NavigateTo("/View");
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                Console.WriteLine("Error");
+            }
+            else
+            {
+                Console.WriteLine("Error");
+            }
+        }
+        else
+        {
+            ij.InvokeVoidAsync("alert", "Username already exists");
+        }
+
+
+    }
+}

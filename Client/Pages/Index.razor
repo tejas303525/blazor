@@ -1,0 +1,50 @@
+﻿@page "/"
+@inject IJSRuntime js
+@inject NavigationManager ns;
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<PageTitle>Index</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Hello, @context.User.Identity.Name!</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>Hello, Guest!</h1>
+    </NotAuthorized>
+</AuthorizeView>
+
+Welcome to your new app. Navigate to your desired location
+
+<AuthorizeView>
+    <Authorized>
+        <br /><br />
+        <button class="w3-button w3-black" @onclick="Viewmember"> View members</button>
+        <br /><br />
+        @if (@context.User.Identity.Name == "admin")
+        {
+            <button class="w3-button w3-black" @onclick="AddMember"> Add members</button>
+
+        }
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    private async Task DisplayGreetingAlert()
+    {
+        var authState = await authenticationState;
+        var message = $"Hello {authState.User.Identity.Name}";
+        await js.InvokeVoidAsync("alert", message);
+    }
+    private void Viewmember()
+    {
+        ns.NavigateTo("/View");
+    }
+    private void AddMember()
+    {
+        ns.NavigateTo("/AddMembers");
+    }
+}

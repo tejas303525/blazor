@@ -1,0 +1,52 @@
+@page "/update-razor/{id:int}"
+@using proj1.Shared
+@inject UserService userService
+@inject NavigationManager navManager
+<h3>Update Member</h3>
+
+
+@if (editingUser != null)
+{
+    <h2>Edit User</h2>
+    <form @onsubmit="SaveChanges">
+        <label for="EditFirstname"> First name</label>
+        <input id="EditFirstname" @bind="editingUser.Firstname" />
+        <label for="EditLastname"> Last name</label>
+        <input id="EditLastname" @bind="editingUser.Lastname" />
+        <label for="EditUsername"> Username</label>
+        <input id="EditUsername" @bind="editingUser.Username" />
+        <label for="EditPassword"> Password</label>
+        <input id="EditPassword" @bind="editingUser.Password" />
+        <select id="role" @bind="editingUser.Role" required>
+            <option value="Administrator">Admin</option>
+            <option value="User">User</option>
+        </select>
+        <button type="submit">Save Changes</button>
+    </form>
+
+}
+else
+{
+    <span>Nothing to update</span>
+}
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    private UserHardcodedAccount editingUser;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        editingUser = userService.GetUserById(id);
+    }
+    private void SaveChanges()
+    {
+        userService.UpdateUser(editingUser);
+        editingUser = null;
+        navManager.NavigateTo("/View");
+    }
+
+
+}

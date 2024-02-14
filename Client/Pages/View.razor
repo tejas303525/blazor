@@ -1,0 +1,84 @@
+﻿@page "/View"
+@attribute [Authorize(Roles = "Administrator,User")]
+@using proj1.Shared
+@inject UserService userservice;
+@inject NavigationManager nv;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+<PageTitle>View Members</PageTitle>
+@using proj1.Client.Services
+@inject ApiService apiService
+
+<h1>View Members</h1>
+
+@if (userservice._users == null || userservice._users.Count == 0)
+{
+    <span>No records</span>
+}
+else
+{
+    <table class="table table-stripped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Delete</th>
+            <th>Edit</th>
+        </tr>
+    </thead>
+
+    @foreach (var v in userservice._users)
+        {
+            <tr>
+                <td>@v.Firstname @v.Lastname</td>
+                <td>@v.Username</td>
+                <td>@v.Role</td>
+                <td><button @onclick="() => Ondelete(v)">Delete</button></td>
+                <td><button @onclick="() => navtoupdatemember(v)">Edit</button></td>
+            </tr>
+        }
+    </table>
+
+
+}
+
+@code {
+    List<UserHardcodedAccount> users = new List<UserHardcodedAccount>();
+
+
+    private string username;
+
+    private UserHardcodedAccount user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            username = authState.User.Identity.Name;
+            users = await apiService.GetUser();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+    protected override void OnParametersSet()
+    {
+        users = userservice.GetUsers();
+    }
+
+    private async Task Ondelete(UserHardcodedAccount user)
+    {
+        await apiService.DeleteUser(user.Id);
+        users = await apiService.GetUser();
+    }
+
+    private void navtoupdatemember(UserHardcodedAccount user)
+    {
+        nv.NavigateTo($"/update-razor/{user.Id}");
+    }
+
+
+}
